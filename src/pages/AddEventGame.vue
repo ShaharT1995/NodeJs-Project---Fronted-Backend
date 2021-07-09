@@ -165,6 +165,11 @@ export default {
 
           }
      },
+     computed: {
+          numberOfEvents() {
+               return parseInt(this.$route.params.eventsLen) + this.listEvents.length;
+          }
+     },
      methods: {
           validateState(param) {
                let { $dirty, $error } = this.$v.form[param];
@@ -183,7 +188,8 @@ export default {
                     type: this.form.type
                }
                this.listEvents.push(event);
-               this.submitAll = true;
+               if (this.numberOfEvents > 2)
+                    this.submitAll = true;
 
                if(flag)
                     this.onReset();
@@ -213,6 +219,7 @@ export default {
                     this.axios.defaults.withCredentials = false;
                     console.log(response);
                     this.$router.push("/manageLeague");
+                    
                }
                catch (err) {
                     console.log(err.response);

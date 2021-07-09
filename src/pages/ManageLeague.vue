@@ -21,7 +21,7 @@
                          </button>
           
                          <br/><br/>
-                         <button  @click="AddEvents(row.item.gameID)"  v-if="!row.item.futureGame" 
+                         <button  @click="AddEvents(row.item.gameID, row.item.events)"  v-if="!row.item.futureGame" 
                                    class="btn btn-outline-info font-weight-bold text-center" :ref="'btn' + row.item.gameID">
                               <span class="h5 font-weight-light text-muted"> Add events </span>
                          </button>
@@ -113,8 +113,8 @@ export default {
           this.$router.push('/addResult/'+ String(row_gameID))
      },
 
-     async AddEvents(row_gameID){
-          this.$router.push('/addEvent/'+ String(row_gameID))
+     async AddEvents(row_gameID, events){
+          this.$router.push('/addEvent/'+ String(row_gameID) + '/' + String(events.length));
     },
   }
 }

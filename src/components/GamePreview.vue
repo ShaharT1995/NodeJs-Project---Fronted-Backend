@@ -1,14 +1,18 @@
 <template>
-  <div class="game-preview">
-    <div :title="id" class="game-title">
-      <b>Game Id:</b> {{ id }}
-    </div>
-    <ul class="game-content">
-      <li> host: {{ hostTeam }}</li>
-      <li> guest: {{ guestTeam }}</li>
-      <li> date: {{ date }}</li>
-      <li> time: {{ hour }}</li>
-    </ul>
+  <div>
+    <b-card style="max-width: 30rem;">
+      <div class="text-left">
+        <h5 class="h3 title">
+          <h5 class="card-header font-weight-bold text-muted text-center">Game ID: {{ gameID }}</h5>
+          <small class="h5 font-weight-light text-muted">Home Team: {{ home_team }}</small><br/>
+          <small class="h5 font-weight-light text-muted">Away Team: {{ away_team }}</small><br/>
+          <small class="h5 font-weight-light text-muted">Date: {{ game_date }}</small><br/>
+          <small class="h5 font-weight-light text-muted">Time: {{ game_time }}</small><br/>
+          <small class="h5 font-weight-light text-muted">Referee: {{ referee_name }}</small><br/>
+          <small class="h5 font-weight-light text-muted">Field: {{ field }}</small><br/>
+        </h5> 
+      </div>
+    </b-card>
   </div>
 </template>
 
@@ -16,29 +20,84 @@
 export default {
   name: "GamePreview",
   props: {
-      id: {
+      gameID: {
         type: Number,
         required: true
       },
-      hostTeam: {
+      homeTeamID: {
+        type: Number,
+        required: true
+      },
+      awayTeamID: {
+        type: Number,
+        required: true
+      },
+      game_date: {
         type: String,
         required: true
       },
-      guestTeam: {
+      game_time: {
         type: String,
         required: true
       },
-      date: {
+      refereeID: {
+        type: Number,
+        required: true
+      },
+      field: {
         type: String,
         required: true
       },
-      hour: {
-        type: String,
+      notInFavorite: {
+        type: Boolean,
         required: true
       }
   }, 
+  data (){
+    return {
+      home_team: "", 
+      away_team: "", 
+      referee_name: ""
+    };
+  },
+  methods: {
+    async addToFavorite(){
+     try {
+        this.axios.defaults.withCredentials = true;
+        let response = await this.axios.post(
+          "http://localhost:3000/users/favoriteGames/",
+           {
+              gameID: this.gameID
+           }
+        );
+        this.axios.defaults.withCredentials = false;
+        let server_respone = response.data;
+        if (server_respone == "The game successfully saved as favorite")
+          this.notInFavorite = false;
+     }
+     catch {
+
+     }
+    },
+  },
   mounted(){
-    console.log("game preview mounted")
+    console.log("game preview mounted");
+
+    let j = 0;
+    for (j = 0; j < this.$root.store.teams.length; j++){
+        let team = this.$root.store.teams[j];
+        if (this.homeTeamID == team.teamID)
+              this.home_team = team.teamName;
+        else if (this.awayTeamID == team.teamID)
+              this.away_team = team.teamName;
+    }
+
+    j = 0;
+    for (j = 0; j < this.$root.store.referees.length; j++){
+      let referee = this.$root.store.referees[j];
+      if (this.refereeID == referee.refereeID)
+            this.referee_name = referee.firsName + " " + referee.lastName;
+    }
   } 
 };
 </script>
@@ -66,7 +125,4 @@ export default {
   width: 100%;
   overflow: hidden;
 }
-
-
-
 </style>

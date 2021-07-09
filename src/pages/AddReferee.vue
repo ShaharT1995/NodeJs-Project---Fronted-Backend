@@ -5,13 +5,13 @@
     <b-card style="max-width: 60rem;" align="center" justify="center">
         <div class="text-left">
           <h5 class="card-header text-muted text-center">
-            <h4 class="card-header font-weight text-muted text-center">Register</h4> <br/>
+            <h4 class="card-header font-weight-light text-center">Add Referee</h4> <br/>
             <b-form @submit.prevent="onRegister" @reset.prevent="onReset">
               <small class="h5 font-weight-light text-muted">
                 <b-form-group
                   id="input-group-userName"
                   label-cols-sm="3"
-                  label="UserName:"
+                  label=" Referee UserName:"
                   label-for="userName">
                   <b-form-input
                     id="userName"
@@ -28,7 +28,7 @@
                 <b-form-group
                   id="input-group-firstName"
                   label-cols-sm="3"
-                  label="First Name:"
+                  label="Referee First Name:"
                   label-for="firstName">
                   <b-form-input
                     id="firstName"
@@ -45,7 +45,7 @@
                 <b-form-group
                   id="input-group-lastName"
                   label-cols-sm="3"
-                  label="Last Name:"
+                  label=" RefereeLast Name:"
                   label-for="lastName">
                   <b-form-input
                     id="lastName"
@@ -74,7 +74,7 @@
                 <b-form-group
                   id="input-group-country"
                   label-cols-sm="3"
-                  label="Country:"
+                  label="Referee Country:"
                   label-for="country">
                   <b-form-select
                     id="country"
@@ -131,7 +131,7 @@
                 <b-form-group
                   id="input-group-profileImage"
                   label-cols-sm="3"
-                  label="Profile Image:"
+                  label="Referee Profile Image:"
                   label-for="profileImage">
                   <b-form-input
                     id="profileImage"
@@ -143,32 +143,41 @@
                 </b-form-group>
               </small>  
 
+              <small class="h5 font-weight-light text-muted">
+                <b-form-group
+                  id="input-group-training"
+                  label-cols-sm="3"
+                  label="Referee Training:"
+                  label-for="training">
+                  <b-form-input
+                    id="training"
+                    type="text"
+                    v-model="$v.form.training.$model"
+                    :state="validateState('training')" ></b-form-input>
+                  <b-form-invalid-feedback v-if="!$v.form.training.required"> Training is required</b-form-invalid-feedback>
+                </b-form-group>
+              </small>  
+
               <button type="submit" class="btn btn-outline-info font-weight-bold text-center" style="margin:30px; min-width:200px">
-                  <span style="font-size:larger;"> Register </span>
+                  <span style="font-size:larger;"> Add Referee </span>
               </button>  
 
-              <button type="reset" class="btn btn-outline-danger font-weight-bold text-center" style="min-width:200px">
-                  <span style="font-size:larger;"> Reset </span>
-              </button>
-
-              <br/>
-
-              <div class="h5 font-weight-light text-muted">
-                You have an account already?
-                <router-link to="login"> Log in here</router-link>
-              </div>
             </b-form>
             <b-alert
               class="mt-2"
               v-if="form.submitError"
               variant="warning"
               dismissible
-              show> Register failed: {{ form.submitError }}
+              show> Add referee failed: {{ form.submitError }}
             </b-alert>
-          </h5>
-        </div>
-    </b-card> 
-  </div>   
+
+          <div v-if="showSuccess"> 
+            The referee has ben added
+          </div>
+        </h5>  
+      </div>  
+    </b-card>  
+  </div>
 </template>
 
 <script>
@@ -187,6 +196,7 @@ export default {
   name: "Register",
   data() {
     return {
+      showSuccess: false,
       form: {
         userName: "",
         firstName: "",
@@ -240,6 +250,9 @@ export default {
       profileImage: {
         required,
         url
+      },
+      training: {
+        required,
       }
     }
   },
@@ -257,22 +270,39 @@ export default {
       let { $dirty, $error } = this.$v.form[param];
       return $dirty ? !$error : null;
     },
-    async Register() {
+    async AddReferee() {
       try {
-      let response = await this.axios.post(
-          "http://localhost:3000/Register",
+        this.form.submitError = "";
+
+        this.axios.defaults.withCredentials = true;
+        let response = await this.axios.post(
+          "http://localhost:3000/manage_league/addReferee",
           {
-            userName: this.form.userName,
-            password: this.form.password,
-            firstName: this.form.firstName,
-            lastName: this.form.lastName,
-            country: this.form.country,
-            image: this.form.profileImage,
-            email: this.form.email
+              user: [{
+                userName: this.form.userName,
+                password: this.form.password,
+                firstName: this.form.firstName,
+                lastName: this.form.lastName,
+                country: this.form.country,
+                image: this.form.profileImage,
+                email: this.form.email
+              }],
+              training: this.form.training
           }
         );
-        console.log(response);
-        this.$router.push("/login");
+        this.axios.defaults.withCredentials = false;
+        if (response.data == "New Refere added"){
+          this.showSuccess = true;
+          
+          this.axios.defaults.withCredentials = true;
+          const response = await this.axios.get(
+            "http://localhost:3000/manage_league/getReferees"
+          );
+          this.axios.defaults.withCredentials = false;
+
+          const referees = response.data;
+          this.$root.store.referees = referees;
+        }
       } 
       catch (err) {
         console.log(err.response);
@@ -281,12 +311,13 @@ export default {
       }
     },
     onRegister() {
-
       this.$v.form.$touch();
-      if (this.$v.form.$anyError) 
+      if (this.$v.form.$anyError){ 
+        this.form.submitError = "";
         return;
+      }
       
-      this.Register();
+      this.AddReferee();  
     },
     onReset() {
       this.form = {
@@ -306,6 +337,8 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss" scoped>
+.container {
+  max-width: 500px;
+}
 </style>
-

@@ -1,35 +1,33 @@
-<template>
-  <div class="container">
-    <h1 class="title">Main Page</h1>
-    <LoginPage v-if="!$root.store.username"></LoginPage>
-    <FavoriteGames v-else></FavoriteGames>
-    <LeagueInfo></LeagueInfo>
-  </div>
+<template> 
+  <div>
+    <div class="container">
+        <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+          <h1 class="display-4">League Home Page</h1>
+        </div>
+
+        <b-card-group deck class="justify-content-center">
+          <LeagueInfo style="min-width: 40rem;"></LeagueInfo>
+          <LoginPage  style="min-width: 40rem;" v-if="!$root.store.username"></LoginPage>
+          <FavoritesGameForHome v-else-if="$root.store.teams && $root.store.referees" style="min-width: 40rem;"></FavoritesGameForHome>
+        </b-card-group>
+
+    </div>
+  </div>  
 </template>
 
 <script>
 import LeagueInfo from "../components/LeagueInfo";
-import FavoriteGames from "../components/FavoriteGames";
+import FavoritesGameForHome from "../components/FavoritesGameForHome";
 import LoginPage from "../pages/LoginPage";
 export default {
   components: {
     LeagueInfo, 
     LoginPage, 
-    FavoriteGames
-  }
+    FavoritesGameForHome
+  },
 };
 </script>
 
-<style lang="scss" scoped>
-.RandomRecipes {
-  margin: 10px 0 10px;
-}
-.blur {
-  -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
-  filter: blur(2px);
-}
-::v-deep .blur .recipe-preview {
-  pointer-events: none;
-  cursor: default;
-}
+<style lang="scss">
+
 </style>
